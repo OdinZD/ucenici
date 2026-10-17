@@ -6,7 +6,7 @@ namespace Tests\Unit;
 
 use App\Support\Season;
 use Carbon\CarbonImmutable;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class SeasonTest extends TestCase
 {

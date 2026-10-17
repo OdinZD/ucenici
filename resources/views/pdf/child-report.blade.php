@@ -28,7 +28,7 @@
     </style>
 </head>
 <body>
-    @php($logo = public_path('images/KKoptimist.png'))
+    @php($logo = public_path(config('club.logo')))
     @if (is_file($logo))
         <div class="logo"><img src="{{ $logo }}" height="80" alt=""></div>
     @endif

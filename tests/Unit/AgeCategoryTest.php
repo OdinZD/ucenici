@@ -7,7 +7,7 @@ namespace Tests\Unit;
 use App\Support\AgeCategory;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class AgeCategoryTest extends TestCase
 {

@@ -17,12 +17,12 @@ final class TrainerSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = (string) config('optimist.default_password', '');
+        $password = (string) config('club.default_password', '');
         /** @var list<string> $emails */
-        $emails = array_values((array) config('optimist.trainer_emails', []));
+        $emails = array_values((array) config('club.trainer_emails', []));
 
         if ($emails === [] || $password === '') {
-            $this->command?->warn('OPTIMIST_TRAINER_EMAILS / OPTIMIST_DEFAULT_PASSWORD not set — no trainers seeded.');
+            $this->command?->warn('CLUB_TRAINER_EMAILS / CLUB_DEFAULT_PASSWORD not set — no trainers seeded.');
 
             return;
         }

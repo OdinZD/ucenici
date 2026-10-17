@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\Belt;
 use App\Models\KataTeam;
 use App\Models\Location;
 use App\Models\Student;
 use App\Models\TrainingGroup;
 use App\Rules\Oib;
+use App\Sports\Grade;
+use App\Sports\Sport;
 use App\Support\AgeCategory;
 use App\Support\MedicalStatus;
 use Carbon\CarbonImmutable;
@@ -43,7 +44,7 @@ final class StudentForm extends Component
 
     public string $nextGradeStatus = 'none';
 
-    public string $nextGradeKyu = '';
+    public string $nextGradeCode = '';
 
     public string $medicalValidUntil = '';
 
@@ -71,12 +72,12 @@ final class StudentForm extends Component
             'oib' => ['nullable', new Oib, Rule::unique('students', 'oib')->ignore($this->studentId)],
             'locationId' => ['nullable', 'exists:locations,id'],
             'trainingGroupId' => ['nullable', 'exists:training_groups,id'],
-            'belt' => ['nullable', Rule::in(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])],
+            'belt' => ['nullable', Rule::in($this->gradeCodes())],
             'nextGradeStatus' => [Rule::in(['none', 'to_register', 'registered'])],
-            'nextGradeKyu' => [
+            'nextGradeCode' => [
                 Rule::requiredIf($this->nextGradeStatus === 'registered'),
                 'nullable',
-                Rule::in(['1', '2', '3', '4', '5', '6', '7', '8', '9']),
+                Rule::in($this->registerableGradeCodes()),
             ],
             'medicalValidUntil' => ['nullable', 'date', Rule::prohibitedIf($this->hasNoMedical)],
             'hasNoMedical' => ['boolean'],
@@ -99,7 +100,7 @@ final class StudentForm extends Component
             'birthDate.after_or_equal' => 'Provjeri datum rođenja',
             'oib.unique' => 'Polaznik s ovim OIB-om već postoji',
             'parentEmail.email' => 'Provjeri e-mail adresu',
-            'nextGradeKyu.required' => 'Odaberi stupanj',
+            'nextGradeCode.required' => 'Odaberi stupanj',
         ];
     }
 
@@ -128,9 +129,9 @@ final class StudentForm extends Component
         $this->oib = $student->oib ?? '';
         $this->locationId = (string) ($student->location_id ?? '');
         $this->trainingGroupId = (string) ($student->training_group_id ?? '');
-        $this->belt = $student->belt_kyu !== null ? (string) $student->belt_kyu->value : '';
+        $this->belt = $student->belt_code ?? '';
         $this->nextGradeStatus = $student->next_grade_status->value;
-        $this->nextGradeKyu = $student->next_grade_kyu !== null ? (string) $student->next_grade_kyu : '';
+        $this->nextGradeCode = $student->next_grade_code ?? '';
         $this->medicalValidUntil = $student->medical_valid_until?->format('Y-m-d') ?? '';
         $this->hasNoMedical = $student->has_no_medical;
         $this->parentName = $student->parent_name ?? '';
@@ -170,13 +171,12 @@ final class StudentForm extends Component
     {
         $this->nextGradeStatus = $status;
 
-        if ($status === 'registered' && $this->nextGradeKyu === '') {
-            $current = ($this->belt !== '' && (int) $this->belt >= 1) ? (int) $this->belt : null;
-            $this->nextGradeKyu = (string) ($current !== null ? max(1, $current - 1) : 9);
+        if ($status === 'registered' && $this->nextGradeCode === '') {
+            $this->nextGradeCode = Sport::active()->suggestNextGradeCode($this->belt ?: null) ?? '';
         }
 
         if ($this->submitted) {
-            $this->validateOnly('nextGradeKyu');
+            $this->validateOnly('nextGradeCode');
         }
     }
 
@@ -199,9 +199,9 @@ final class StudentForm extends Component
             'oib' => $this->oib ?: null,
             'location_id' => $this->locationId ?: null,
             'training_group_id' => $this->trainingGroupId ?: null,
-            'belt_kyu' => $this->belt === '' ? null : (int) $this->belt,
+            'belt_code' => $this->belt ?: null,
             'next_grade_status' => $this->nextGradeStatus,
-            'next_grade_kyu' => $this->nextGradeStatus === 'registered' ? (int) $this->nextGradeKyu : null,
+            'next_grade_code' => $this->nextGradeStatus === 'registered' ? ($this->nextGradeCode ?: null) : null,
             'medical_valid_until' => $this->hasNoMedical ? null : ($this->medicalValidUntil ?: null),
             'has_no_medical' => $this->hasNoMedical,
             'parent_name' => $this->parentName ?: null,
@@ -215,7 +215,9 @@ final class StudentForm extends Component
             ? tap(Student::findOrFail($this->studentId))->update($data)
             : Student::create($data);
 
-        $student->kataTeams()->sync($this->kataTeamIds);
+        if (Sport::hasFeature('kata_teams')) {
+            $student->kataTeams()->sync($this->kataTeamIds);
+        }
 
         $this->dispatch('students-changed');
         $this->dispatch('toast', message: "Spremljeno: {$student->last_name} {$student->first_name}");
@@ -226,7 +228,7 @@ final class StudentForm extends Component
     {
         $this->reset([
             'lastName', 'firstName', 'birthDate', 'oib', 'locationId', 'trainingGroupId',
-            'belt', 'nextGradeStatus', 'nextGradeKyu', 'medicalValidUntil', 'hasNoMedical',
+            'belt', 'nextGradeStatus', 'nextGradeCode', 'medicalValidUntil', 'hasNoMedical',
             'parentName', 'parentPhone', 'parentEmail', 'note', 'flagT', 'kataTeamIds', 'submitted',
         ]);
     }
@@ -242,8 +244,23 @@ final class StudentForm extends Component
             'medicalStatus' => MedicalStatus::for($validUntil, $this->hasNoMedical, $today),
             'locations' => Location::orderBy('name')->get(),
             'groups' => TrainingGroup::orderBy('name')->get(),
-            'belts' => Belt::options(),
-            'kataTeams' => KataTeam::orderBy('name')->get(),
+            'belts' => Sport::active()->grades(),
+            'kataTeams' => Sport::hasFeature('kata_teams') ? KataTeam::orderBy('name')->get() : collect(),
         ]);
+    }
+
+    /** @return list<string> all belt codes (incl. "none") for the belt field. */
+    private function gradeCodes(): array
+    {
+        return array_map(fn (Grade $grade): string => $grade->code, Sport::active()->grades());
+    }
+
+    /** @return list<string> registerable belt codes (excl. "none") for the next-grade field. */
+    private function registerableGradeCodes(): array
+    {
+        return array_values(array_map(
+            fn (Grade $grade): string => $grade->code,
+            array_filter(Sport::active()->grades(), fn (Grade $grade): bool => ! $grade->isNone),
+        ));
     }
 }

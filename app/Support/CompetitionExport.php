@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Student;
+use App\Sports\Sport;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -30,7 +31,7 @@ final class CompetitionExport
                 $student->first_name,
                 $student->birth_date?->format('d.m.Y.') ?? '',
                 $category?->label ?? 'Bez datuma rođenja',
-                $student->belt_kyu?->label() ?? 'Nije uneseno',
+                $student->grade?->label ?? Sport::active()->gradeNotEnteredLabel(),
             ];
         })->values()->all();
 

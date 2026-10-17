@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Belt;
 use App\Enums\NextGradeStatus;
+use App\Sports\Grade;
+use App\Sports\Sport;
 use App\Support\AgeCategory;
 use App\Support\Diacritics;
 use App\Support\MedicalStatus;
@@ -35,9 +36,9 @@ final class Student extends Model
         'oib',
         'location_id',
         'training_group_id',
-        'belt_kyu',
+        'belt_code',
         'next_grade_status',
-        'next_grade_kyu',
+        'next_grade_code',
         'medical_valid_until',
         'has_no_medical',
         'parent_name',
@@ -52,9 +53,9 @@ final class Student extends Model
         return [
             'birth_date' => 'immutable_date',
             'medical_valid_until' => 'immutable_date',
-            'belt_kyu' => Belt::class,
+            // belt_code / next_grade_code are plain string codes resolved via the
+            // active sport profile — see grade() / nextGrade().
             'next_grade_status' => NextGradeStatus::class,
-            'next_grade_kyu' => 'integer',
             'has_no_medical' => 'boolean',
             'flag_t' => 'boolean',
         ];
@@ -103,6 +104,18 @@ final class Student extends Model
                 CarbonImmutable::now(),
             ),
         );
+    }
+
+    /** @return Attribute<?Grade, never> */
+    protected function grade(): Attribute
+    {
+        return Attribute::get(fn (): ?Grade => Sport::active()->grade($this->belt_code));
+    }
+
+    /** @return Attribute<?Grade, never> */
+    protected function nextGrade(): Attribute
+    {
+        return Attribute::get(fn (): ?Grade => Sport::active()->grade($this->next_grade_code));
     }
 
     /** Diacritic-insensitive text searched by the list filter (SPEC §4.3). */

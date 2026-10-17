@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Discipline;
 use App\Enums\Medal;
 use App\Models\CompetitionResult;
 use App\Models\Student;
+use App\Sports\Sport;
 
 /**
  * Structured data for a child's end-of-season competition report (one karate season,
@@ -33,9 +33,9 @@ final class ChildReport
             ->sortBy(fn (CompetitionResult $r) => $r->competition->held_on->getTimestamp());
 
         $disciplines = [];
-        foreach (Discipline::options() as $discipline) {
+        foreach (Sport::active()->disciplines() as $discipline) {
             $rows = $results
-                ->filter(fn (CompetitionResult $r): bool => $r->discipline === $discipline)
+                ->filter(fn (CompetitionResult $r): bool => $r->discipline === $discipline->value)
                 ->map(fn (CompetitionResult $r): array => [
                     'competition' => $r->competition->name,
                     'date' => $r->competition->held_on->format('d.m.Y.'),
@@ -51,14 +51,14 @@ final class ChildReport
                 ->all();
 
             if ($rows !== []) {
-                $disciplines[] = ['label' => $discipline->label(), 'rows' => $rows];
+                $disciplines[] = ['label' => $discipline->label, 'rows' => $rows];
             }
         }
 
         return [
             'childName' => "{$child->last_name} {$child->first_name}",
             'season' => Season::label($seasonStart),
-            'club' => (string) config('optimist.club_name'),
+            'club' => (string) config('club.name'),
             'disciplines' => $disciplines,
             'summary' => [
                 'competitions' => $results->pluck('competition_id')->unique()->count(),

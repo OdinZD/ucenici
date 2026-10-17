@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Sports\Sport;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
 /**
- * Karate season: runs 1 September → 1 July of the next year (July/August are off-season —
- * no competitions, no training). A season is identified by its start year (the September year),
- * e.g. start 2025 = season "2025/2026" = 01.09.2025.–01.07.2026.
+ * The club's season, as defined by the active sport profile (App\Sports). Default
+ * (karate): 1 September → 1 July of the next year (July/August off-season). A season
+ * is identified by its start year (the start-month year), e.g. 2025 = "2025/2026".
+ * Assumes the window spans a calendar-year boundary (start autumn → end next summer).
  */
 final class Season
 {
     /** Season currently in progress on the given day. */
     public static function current(CarbonInterface $today): int
     {
-        return $today->month >= 9 ? $today->year : $today->year - 1;
+        return $today->month >= Sport::active()->season()->startMonth ? $today->year : $today->year - 1;
     }
 
     /**
@@ -25,9 +27,11 @@ final class Season
      */
     public static function window(int $start): array
     {
+        $window = Sport::active()->season();
+
         return [
-            CarbonImmutable::create($start, 9, 1, 0, 0, 0),
-            CarbonImmutable::create($start + 1, 7, 1, 0, 0, 0),
+            CarbonImmutable::create($start, $window->startMonth, $window->startDay, 0, 0, 0),
+            CarbonImmutable::create($start + 1, $window->endMonth, $window->endDay, 0, 0, 0),
         ];
     }
 

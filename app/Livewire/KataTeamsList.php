@@ -132,7 +132,7 @@ final class KataTeamsList extends Component
         }
 
         $path = storage_path('app/'.Str::uuid()->toString().'.xlsx');
-        $banner = config('optimist.club_name').' — Kata timovi · '.CarbonImmutable::now()->format('d.m.Y.');
+        $banner = config('club.name').' — Kata timovi · '.CarbonImmutable::now()->format('d.m.Y.');
         SpreadsheetWriter::writeSections($path, $banner, $export['headers'], $export['sections']);
 
         return response()->download($path, 'kata-timovi-'.CarbonImmutable::now()->format('Y-m-d').'.xlsx')->deleteFileAfterSend();

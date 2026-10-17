@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\Belt;
 use App\Enums\NextGradeStatus;
 use App\Models\Student;
 use App\Support\AgeCategory;
@@ -98,6 +97,6 @@ final class DatasetImportTest extends TestCase
         $this->assertSame(28, $expired, 'Liječnički istekao');
         $this->assertSame(4, Student::where('next_grade_status', NextGradeStatus::ToRegister->value)->count(), 'Treba upisati');
         $this->assertSame(3, $kardum, 'Pretraga "kardum"');
-        $this->assertSame(19, Student::where('belt_kyu', Belt::Kyu6->value)->count(), '6. kyu');
+        $this->assertSame(19, Student::where('belt_code', '6')->count(), '6. kyu');
     }
 }

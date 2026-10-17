@@ -20,7 +20,7 @@
                             }
                         @endphp
                         <div class="text-[13px] text-[var(--ink2)] mt-0.5 flex flex-wrap gap-x-2">
-                            <span class="font-medium">{{ $r->discipline->label() }}</span>
+                            <span class="font-medium">{{ $r->disciplineLabel() }}</span>
                             @if ($r->category)<span class="text-[var(--ink3)]">{{ $r->category }}</span>@endif
                             @if ($r->place)<span>· {{ $r->place }}. mjesto</span>@endif
                             @if ($r->medal)<span style="color:var(--acc)">{{ $r->medal->label() }}</span>@endif
@@ -64,7 +64,7 @@
                     <select wire:model="discipline" class="h-10 w-full rounded-[var(--r-control)] border bg-[var(--surface)] px-2 text-[14px] text-[var(--ink)] focus:outline-none" style="border-color:{{ $errors->has('discipline') ? 'var(--danger)' : 'var(--line2)' }}">
                         <option value="">— odaberi —</option>
                         @foreach ($disciplines as $d)
-                            <option value="{{ $d->value }}">{{ $d->label() }}</option>
+                            <option value="{{ $d->value }}">{{ $d->label }}</option>
                         @endforeach
                     </select>
                     @error('discipline') <p class="mt-1 text-[12px] font-medium text-[var(--danger)]">{{ $message }}</p> @enderror

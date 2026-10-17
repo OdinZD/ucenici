@@ -1,6 +1,6 @@
 <div class="bg-[var(--surface)] border border-[var(--line)] rounded-[var(--r-card)] p-6 shadow-sm">
     <h1 class="font-display text-[20px] font-semibold text-[var(--ink)]">Prijava</h1>
-    <p class="text-[14px] text-[var(--ink2)] mt-1 mb-5">Evidencija polaznika kluba Optimist.</p>
+    <p class="text-[14px] text-[var(--ink2)] mt-1 mb-5">Evidencija polaznika.</p>
 
     <form wire:submit="login" class="flex flex-col gap-4" novalidate>
         <div>

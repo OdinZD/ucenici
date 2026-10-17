@@ -89,7 +89,7 @@ final class StudentFormTest extends TestCase
         $this->assertDatabaseHas('students', [
             'last_name' => 'Testić',
             'first_name' => 'Ana',
-            'belt_kyu' => 6,
+            'belt_code' => '6',
         ]);
     }
 
@@ -159,12 +159,12 @@ final class StudentFormTest extends TestCase
             ->call('openCreate')
             ->set('belt', '6')
             ->call('selectNextGrade', 'registered')
-            ->assertSet('nextGradeKyu', '5');
+            ->assertSet('nextGradeCode', '5');
 
         Livewire::test(StudentForm::class)
             ->call('openCreate')
             ->call('selectNextGrade', 'registered')
-            ->assertSet('nextGradeKyu', '9');
+            ->assertSet('nextGradeCode', '9');
     }
 
     public function test_no_medical_clears_the_date(): void

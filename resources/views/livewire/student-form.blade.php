@@ -76,19 +76,19 @@
                         </div>
                     </section>
 
-                    {{-- 2 · Karate --}}
+                    {{-- 2 · Sport (pojas, grupa, upis) --}}
                     <section class="border-t border-[var(--line)] pt-5">
-                        <h3 class="font-display text-[16px] font-semibold text-[var(--ink)] mb-3">Karate</h3>
+                        <h3 class="font-display text-[16px] font-semibold text-[var(--ink)] mb-3">{{ ucfirst(\App\Sports\Sport::active()->key()) }}</h3>
                         <div class="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))]">
                             <div>
                                 <label for="f-belt" class="block text-[13px] font-semibold text-[var(--ink2)] mb-1.5">Pojas</label>
                                 <div class="flex items-center gap-2">
-                                    <x-belt-stripe :kyu="$belt === '' ? null : (int) $belt" :show-label="false" />
+                                    <x-belt-stripe :grade="$belt === '' ? null : \App\Sports\Sport::active()->grade($belt)" :show-label="false" />
                                     <select id="f-belt" wire:model.live="belt"
                                             class="h-11 w-full rounded-[var(--r-control)] border border-[var(--line2)] bg-[var(--surface)] px-3 text-[15px] text-[var(--ink)] focus:outline-none">
                                         <option value="">— nije uneseno</option>
                                         @foreach ($belts as $b)
-                                            <option value="{{ $b->value }}">{{ $b->label() }}</option>
+                                            <option value="{{ $b->code }}">{{ $b->label }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -128,18 +128,21 @@
                             @if ($nextGradeStatus === 'registered')
                                 <div class="mt-3 max-w-[200px]">
                                     <label for="f-ngk" class="block text-[13px] font-semibold text-[var(--ink2)] mb-1.5">Upisan na</label>
-                                    <select id="f-ngk" wire:model.live="nextGradeKyu"
+                                    <select id="f-ngk" wire:model.live="nextGradeCode"
                                             class="h-11 w-full rounded-[var(--r-control)] border bg-[var(--surface)] px-3 text-[15px] text-[var(--ink)] focus:outline-none"
-                                            style="border-color:{{ $errors->has('nextGradeKyu') ? 'var(--danger)' : 'var(--line2)' }}">
+                                            style="border-color:{{ $errors->has('nextGradeCode') ? 'var(--danger)' : 'var(--line2)' }}">
                                         <option value="">—</option>
-                                        @for ($k = 1; $k <= 9; $k++)
-                                            <option value="{{ $k }}">{{ $k }}. kyu</option>
-                                        @endfor
+                                        @foreach ($belts as $b)
+                                            @if (! $b->isNone)
+                                                <option value="{{ $b->code }}">{{ $b->label }}</option>
+                                            @endif
+                                        @endforeach
                                     </select>
-                                    @error('nextGradeKyu') <p class="mt-1.5 text-[13px] font-medium text-[var(--danger)]">{{ $message }}</p> @enderror
+                                    @error('nextGradeCode') <p class="mt-1.5 text-[13px] font-medium text-[var(--danger)]">{{ $message }}</p> @enderror
                                 </div>
                             @endif
                         </div>
+                        @if (\App\Sports\Sport::hasFeature('kata_teams'))
                         <div class="mt-4">
                             <span class="block text-[13px] font-semibold text-[var(--ink2)] mb-1.5">Kata timovi</span>
                             @forelse ($kataTeams as $team)
@@ -154,6 +157,7 @@
                                 <p class="text-[13px] text-[var(--ink3)]">Još nema timova — dodaj ih na stranici <a href="{{ route('kata-timovi') }}" class="font-semibold text-[var(--acc)] hover:underline">Kata timovi</a>.</p>
                             @endforelse
                         </div>
+                        @endif
                     </section>
 
                     {{-- 3 · Liječnički pregled --}}

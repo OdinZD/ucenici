@@ -30,7 +30,7 @@ final class CompetitionExportTest extends TestCase
             'first_name' => 'Tonka',
             'birth_date' => '2016-07-15',
             'oib' => '20396411832',
-            'belt_kyu' => 7,
+            'belt_code' => '7',
             'medical_valid_until' => '2027-01-12',
         ]);
 

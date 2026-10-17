@@ -18,7 +18,7 @@ CREATE TABLE competition_results (
     id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     student_id     BIGINT UNSIGNED NOT NULL,
     competition_id BIGINT UNSIGNED NOT NULL,
-    discipline     VARCHAR(10) NOT NULL,   -- kate | kumite | kata_team
+    discipline     VARCHAR(30) NOT NULL,   -- kod discipline iz aktivnog sport profila (karate: kate | kumite | kata_team)
     category       VARCHAR(60) NULL,
     place          TINYINT NULL,           -- plasman; medalja se računa iz plasmana (1/2/3)
     wins           TINYINT NULL,

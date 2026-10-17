@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Discipline;
 use App\Enums\Medal;
+use App\Sports\Sport;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,12 +27,25 @@ final class CompetitionResult extends Model
     protected function casts(): array
     {
         return [
-            'discipline' => Discipline::class,
+            // discipline is a plain string code; its label comes from the active
+            // sport profile (disciplines vary per sport) — see disciplineLabel().
             'place' => 'integer',
             'wins' => 'integer',
             'losses' => 'integer',
             'bouts' => 'integer',
         ];
+    }
+
+    /** Display label for the stored discipline code, via the active sport profile. */
+    public function disciplineLabel(): string
+    {
+        foreach (Sport::active()->disciplines() as $discipline) {
+            if ($discipline->value === $this->discipline) {
+                return $discipline->label;
+            }
+        }
+
+        return (string) $this->discipline;
     }
 
     public function student(): BelongsTo

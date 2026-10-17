@@ -18,13 +18,13 @@ return new class extends Migration
             // OIB: 11 digits incl. ISO 7064 MOD 11,10 check digit. Many students have none.
             $table->char('oib', 11)->nullable()->unique();
 
-            // Karate
+            // Sport (pojas/grupa/lokacija)
             $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('training_group_id')->nullable()->constrained()->nullOnDelete();
-            // null = not entered, 0 = no belt, 1–9 = kyu
-            $table->tinyInteger('belt_kyu')->nullable();
+            // Pojas kao kod iz aktivnog sport profila (App\Sports); null = nije uneseno.
+            $table->string('belt_code')->nullable();
             $table->string('next_grade_status', 20)->default('none'); // none / to_register / registered
-            $table->tinyInteger('next_grade_kyu')->nullable();        // required 1–9 when status = registered
+            $table->string('next_grade_code')->nullable();            // obavezno kad je status = registered
 
             // Liječnički pregled
             $table->date('medical_valid_until')->nullable();

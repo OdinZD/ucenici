@@ -83,7 +83,7 @@
                 class="h-11 max-w-[190px] rounded-[var(--r-control)] border border-[var(--line2)] bg-[var(--surface)] px-3 text-[15px] text-[var(--ink)] max-[760px]:max-w-none max-[760px]:w-full">
             <option value="">Svi pojasevi</option>
             @foreach ($belts as $b)
-                <option value="{{ $b->value }}">{{ $b->label() }}</option>
+                <option value="{{ $b->code }}">{{ $b->label }}</option>
             @endforeach
         </select>
 
@@ -161,9 +161,11 @@
                             @if ($s->flag_t)
                                 <span class="ml-1 inline-block rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)">t</span>
                             @endif
-                            @foreach ($s->kataTeams as $team)
-                                <span class="ml-1 inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)"><span class="w-2 h-2 rounded-full" style="background:{{ $team->color }}"></span>{{ $team->name }}</span>
-                            @endforeach
+                            @if (\App\Sports\Sport::hasFeature('kata_teams'))
+                                @foreach ($s->kataTeams as $team)
+                                    <span class="ml-1 inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)"><span class="w-2 h-2 rounded-full" style="background:{{ $team->color }}"></span>{{ $team->name }}</span>
+                                @endforeach
+                            @endif
                             @if ($s->declaration)
                                 <span class="ml-1 inline-flex items-center rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--st-valid-bg);color:var(--st-valid-fg)" title="Izjava učitana"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="sr-only">Izjava učitana</span></span>
                             @else
@@ -172,8 +174,8 @@
                             <div class="text-[13px] text-[var(--ink3)] mt-0.5">{{ $s->location?->name ?? '—' }}</div>
                         </td>
                         <td class="px-4 py-3 align-top">
-                            <x-belt-stripe :kyu="$s->belt_kyu?->value" />
-                            <div class="mt-1"><x-next-grade-badge :status="$s->next_grade_status" :kyu="$s->next_grade_kyu" /></div>
+                            <x-belt-stripe :grade="$s->grade" />
+                            <div class="mt-1"><x-next-grade-badge :status="$s->next_grade_status" :grade="$s->nextGrade" /></div>
                         </td>
                         <td class="px-4 py-3 align-top text-[14px] {{ $s->trainingGroup ? 'text-[var(--ink)]' : 'text-[var(--ink3)]' }}">
                             {{ $s->trainingGroup?->name ?? '—' }}
@@ -259,9 +261,11 @@
                         @if ($s->flag_t)
                             <span class="ml-1 inline-block rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)">t</span>
                         @endif
-                        @foreach ($s->kataTeams as $team)
-                            <span class="ml-1 inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)"><span class="w-2 h-2 rounded-full" style="background:{{ $team->color }}"></span>{{ $team->name }}</span>
-                        @endforeach
+                        @if (\App\Sports\Sport::hasFeature('kata_teams'))
+                            @foreach ($s->kataTeams as $team)
+                                <span class="ml-1 inline-flex items-center gap-1 rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--neutral-pill);color:var(--ink2)"><span class="w-2 h-2 rounded-full" style="background:{{ $team->color }}"></span>{{ $team->name }}</span>
+                            @endforeach
+                        @endif
                         @if ($s->declaration)
                             <span class="ml-1 inline-flex items-center rounded-[var(--r-tag)] px-1.5 text-[11px] font-semibold align-middle" style="background:var(--st-valid-bg);color:var(--st-valid-fg)" title="Izjava učitana"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="sr-only">Izjava učitana</span></span>
                         @else
@@ -285,8 +289,8 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 mt-3 flex-wrap">
-                    <x-belt-stripe :kyu="$s->belt_kyu?->value" />
-                    <x-next-grade-badge :status="$s->next_grade_status" :kyu="$s->next_grade_kyu" />
+                    <x-belt-stripe :grade="$s->grade" />
+                    <x-next-grade-badge :status="$s->next_grade_status" :grade="$s->nextGrade" />
                 </div>
                 <div class="flex items-center gap-2 mt-2 flex-wrap text-[14px]">
                     <span class="text-[var(--ink)]">{{ $age?->label ?? 'Bez datuma rođenja' }}</span>

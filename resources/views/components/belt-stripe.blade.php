@@ -1,17 +1,15 @@
-@props(['kyu' => null, 'showLabel' => true])
+@props(['grade' => null, 'showLabel' => true])
 
 @php
-    $value = $kyu === null ? null : (int) $kyu;
-    $belt = $value === null ? null : \App\Enums\Belt::from($value);
-    $label = $belt?->label() ?? \App\Enums\Belt::NOT_ENTERED_LABEL;
+    /** @var \App\Sports\Grade|null $grade */
+    $label = $grade?->label ?? \App\Sports\Sport::active()->gradeNotEnteredLabel();
 
-    // Stripe fill + border, mirroring the approved prototype's beltStyle().
+    // Stripe fill + border from the Grade (colours per sport profile, inline hex).
     [$background, $border] = match (true) {
-        $value === null => ['var(--surface)', '1px dashed var(--belt-none-border)'],
-        $value === 0    => ['var(--surface)', '1px solid var(--belt-none-border)'],
-        $value === 9    => ['linear-gradient(90deg, var(--belt-9-a) 50%, var(--belt-9-b) 50%)', '1px solid var(--belt-border)'],
-        $value === 1    => ['linear-gradient(90deg, var(--belt-1-a) 50%, var(--belt-1-b) 50%)', '1px solid var(--belt-border)'],
-        default         => ['var(--belt-' . $value . ')', '1px solid var(--belt-border)'],
+        $grade === null   => ['var(--surface)', '1px dashed var(--belt-none-border)'],
+        $grade->isNone    => ['var(--surface)', '1px solid var(--belt-none-border)'],
+        $grade->isSplit() => ['linear-gradient(90deg, '.$grade->colorPrimary.' 50%, '.$grade->colorSecondary.' 50%)', '1px solid var(--belt-border)'],
+        default           => [$grade->colorPrimary, '1px solid var(--belt-border)'],
     };
 @endphp
 
@@ -19,6 +17,6 @@
     <span class="inline-block shrink-0" aria-hidden="true"
           style="width:30px;height:10px;border-radius:3px;background:{{ $background }};border:{{ $border }}"></span>
     @if ($showLabel)
-        <span class="text-[14px] {{ $value === null ? 'text-[var(--ink3)]' : 'text-[var(--ink)]' }}">{{ $label }}</span>
+        <span class="text-[14px] {{ $grade === null ? 'text-[var(--ink3)]' : 'text-[var(--ink)]' }}">{{ $label }}</span>
     @endif
 </span>

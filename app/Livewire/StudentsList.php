@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\Belt;
 use App\Enums\NextGradeStatus;
 use App\Models\Location;
 use App\Models\Student;
 use App\Models\TrainingGroup;
+use App\Sports\Sport;
 use App\Support\AgeCategory;
 use App\Support\ChildReport;
 use App\Support\CompetitionExport;
@@ -121,7 +121,7 @@ final class StudentsList extends Component
     private function downloadXlsx(array $export, string $filename, string $title)
     {
         $path = storage_path('app/'.Str::uuid()->toString().'.xlsx');
-        $banner = config('optimist.club_name').' — '.$title.' · '.$this->today()->format('d.m.Y.');
+        $banner = config('club.name').' — '.$title.' · '.$this->today()->format('d.m.Y.');
 
         SpreadsheetWriter::write($path, $banner, $export);
 
@@ -171,7 +171,13 @@ final class StudentsList extends Component
     /** All non-deleted students, loaded once per request. */
     private function allStudents(): Collection
     {
-        return $this->cache ??= Student::with(['location', 'trainingGroup', 'kataTeams', 'declaration'])->get();
+        $with = ['location', 'trainingGroup', 'declaration'];
+
+        if (Sport::hasFeature('kata_teams')) {
+            $with[] = 'kataTeams';
+        }
+
+        return $this->cache ??= Student::with($with)->get();
     }
 
     private function today(): CarbonImmutable
@@ -203,7 +209,7 @@ final class StudentsList extends Component
             return false;
         }
 
-        if ($this->belt !== '' && (string) ($student->belt_kyu?->value ?? '') !== $this->belt) {
+        if ($this->belt !== '' && ($student->belt_code ?? '') !== $this->belt) {
             return false;
         }
 
@@ -314,7 +320,7 @@ final class StudentsList extends Component
                 ->count(),
             'locations' => Location::orderBy('name')->get(),
             'groups' => TrainingGroup::orderBy('name')->get(),
-            'belts' => Belt::options(),
+            'belts' => Sport::active()->grades(),
             'subtitle' => $this->subtitle($rows->count()),
             'filtersActive' => $this->hasActiveFilters(),
             'reportSeasons' => collect(range(Season::current($today), Season::current($today) - 4))

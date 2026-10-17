@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\Discipline;
 use App\Models\Competition;
 use App\Models\CompetitionResult;
+use App\Sports\Sport;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -47,7 +47,10 @@ final class StudentResults extends Component
     {
         return [
             'competitionId' => ['required', 'exists:competitions,id'],
-            'discipline' => ['required', Rule::enum(Discipline::class)],
+            'discipline' => ['required', Rule::in(array_map(
+                fn ($discipline): string => $discipline->value,
+                Sport::active()->disciplines(),
+            ))],
             'category' => ['nullable', 'string', 'max:60'],
             'place' => ['nullable', 'integer', 'min:1', 'max:99'],
             'wins' => ['nullable', 'integer', 'min:0', 'max:127'],
@@ -77,7 +80,7 @@ final class StudentResults extends Component
         $result = $this->ownedResult($id);
         $this->editingId = $result->id;
         $this->competitionId = (string) $result->competition_id;
-        $this->discipline = $result->discipline->value;
+        $this->discipline = $result->discipline;
         $this->category = $result->category ?? '';
         $this->place = $result->place !== null ? (string) $result->place : '';
         $this->wins = $result->wins !== null ? (string) $result->wins : '';
@@ -152,7 +155,7 @@ final class StudentResults extends Component
                 ->sortByDesc(fn (CompetitionResult $r) => $r->competition->held_on)
                 ->values(),
             'competitions' => Competition::orderByDesc('held_on')->get(),
-            'disciplines' => Discipline::options(),
+            'disciplines' => Sport::active()->disciplines(),
         ]);
     }
 }

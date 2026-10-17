@@ -6,7 +6,8 @@ namespace App\Enums;
 
 /**
  * "Upis sljedećeg stupnja" — stored in students.next_grade_status.
- * When Registered, students.next_grade_kyu holds the target kyu (1–9).
+ * When Registered, students.next_grade_code holds the target grade code
+ * (resolved via the active sport profile, App\Sports).
  */
 enum NextGradeStatus: string
 {
